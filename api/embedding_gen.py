@@ -1,0 +1,110 @@
+
+from pymongo import MongoClient
+from dotenv import load_dotenv
+from openai import OpenAI
+from langchain_openai import OpenAIEmbeddings
+import os
+
+load_dotenv()
+
+DB_NAME = 'test_database'
+
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+print(OPENAI_API_KEY)
+
+os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+
+embeddings = OpenAIEmbeddings(modal="text-embedding-3-small")
+
+client = OpenAI()
+
+def get_embedding(text, model="text-embedding-3-small"):
+   # text = text.replace("\n", " ")
+   # return client.embeddings.create(input = [text], model=model).data[0].embedding
+   return embeddings.embed_query(text)
+
+
+
+def extract_student_data(base_path):
+    # Dictionary to hold all extracted information
+    extracted_info = {}
+    
+    # Check if the path exists to avoid errors
+    if not os.path.exists(base_path):
+        print(f"The specified path does not exist: {base_path}")
+        return
+    
+    # Iterate over each folder in the base directory
+    for folder_name in os.listdir(base_path):
+        student_folder_path = os.path.join(base_path, folder_name)
+        
+        # Skip any files to ensure we're only dealing with directories
+        if not os.path.isdir(student_folder_path):
+            continue
+        
+        # Initialize a dictionary for this student's data
+        student_data = {'feedback': '', 'code': '', 'report': '', 'tests': ''}
+        
+        # Iterate over files within the student's folder
+        for file_name in os.listdir(student_folder_path):
+            file_path = os.path.join(student_folder_path, file_name)
+            
+            # Determine the type of file and read its content
+            if file_name.endswith('_feedback.txt'):
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    student_data['feedback'] = file.read()
+            elif file_name.endswith('_code.txt'):
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    student_data['code'] = file.read()
+            elif file_name.endswith('_report.txt'):
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    student_data['report'] = file.read()
+            elif file_name.endswith('_tests.txt'):
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    student_data['tests'] = file.read()
+        
+        # Use the folder name as the student ID and add to extracted_info
+        extracted_info[folder_name] = student_data
+    
+    return extracted_info
+
+def save_embedding_to_file(base_path, student_id, embedding):
+    # Construct the path to the student's folder
+    student_folder_path = os.path.join(base_path, student_id)
+    
+    # Ensure the folder exists
+    if not os.path.isdir(student_folder_path):
+        print(f"Folder for student ID {student_id} does not exist.")
+        return
+    
+    # Construct the full path for the embedding file
+    embedding_file_path = os.path.join(student_folder_path, f"{student_id}_embedding.txt")
+    
+    # Convert the embedding to a string format (e.g., comma-separated values)
+    embedding_str = ", ".join(map(str, embedding))
+    
+    # Write the embedding to a file
+    with open(embedding_file_path, 'w', encoding='utf-8') as file:
+        file.write(embedding_str)
+    print(f"Saved embedding for student ID {student_id} at {embedding_file_path}")
+
+# Example usage
+if __name__ == "__main__":
+    base_path = './cleaned_stuff'  # Update this path to your directory's path
+    data = extract_student_data(base_path)
+    with open("./rubric.txt", 'r', encoding='utf-8') as file:
+        rubric = file.read()
+    
+    for student_id, student_data in data.items():
+        # Concatenate the text components for each student
+        text_to_embed = rubric + "\n" + student_data['report'] + "\n" + student_data['tests'] + "\n" + student_data['code']
+        try:
+            embedding = get_embedding(text_to_embed)
+            print("not weird")
+        except Exception as e:
+            print("weird")
+
+        save_embedding_to_file(base_path, student_id, embedding)    
+
+
