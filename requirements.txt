@@ -19,3 +19,5 @@ Werkzeug==3.0.1
 modal==1.14.1
 langchain_openai==0.0.8
 modal==0.61.88
+torch==2.2.1+cu118
+transformers==4.38.2
