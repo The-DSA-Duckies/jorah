@@ -33,10 +33,10 @@ def last_token_pool(last_hidden_states: Tensor,
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
+tokenizer = AutoTokenizer.from_pretrained('Salesforce/SFR-Embedding-Mistral')
+model = AutoModel.from_pretrained('Salesforce/SFR-Embedding-Mistral')
 def get_embedding(text):
     # Load model and tokenizer
-    tokenizer = AutoTokenizer.from_pretrained('Salesforce/SFR-Embedding-Mistral')
-    model = AutoModel.from_pretrained('Salesforce/SFR-Embedding-Mistral')
 
     # Prepare the text for the model
     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=4096)
