@@ -27,3 +27,29 @@ def ping():
         print(e)
 
     return "My First API !!"
+
+# DB_NAME = 'test_database'
+
+# Select the database
+# db = client[DB_NAME]
+
+# Define the collection (table) name
+# collection_name = 'newCollection'
+
+# Select the collection. If it doesn't exist, it will be created when the first document is inserted.
+# collection = db[collection_name]
+
+# Data points to insert
+# data_points = [
+#     {"name": "John Doe", "age": 30, "city": "New York"},
+#     {"name": "Jane Doe", "age": 25, "city": "Chicago"},
+#     {"name": "Jim Beam", "age": 35, "city": "San Francisco"}
+# ]
+
+# Insert data points into the collection
+# result = collection.insert_many(data_points)
+
+# Print the IDs of the inserted documents
+# print('IDs of the inserted documents:', result.inserted_ids)
+# for data_point in data_points:
+#     print(data_point["name"])
