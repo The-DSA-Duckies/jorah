@@ -123,12 +123,17 @@ if __name__ == "__main__":
     
     for student_id, student_data in data.items():
         # Concatenate the text components for each student
-        text_to_embed = rubric + "\n" + student_data['report'] + "\n" + student_data['tests'] + "\n" + student_data['code']
-        try:
-            embedding = get_embedding(text_to_embed)
-            print("not weird")
-        except Exception as e:
-            print("weird")
+        student_folder_path = os.path.join(base_path, student_id)
+        embedding_file_path = os.path.join(student_folder_path, f"{student_id}_embedding.txt")
+
+        if not os.path.exists(embedding_file_path):
+            text_to_embed = rubric + "\n" + student_data['report'] + "\n" + student_data['tests'] + "\n" + student_data['code']
+            try:
+                embedding = get_embedding(text_to_embed)
+                print("not weird")
+            except Exception as e:
+                print("weird")
+        
 
         save_embedding_to_file(base_path, student_id, embedding)    
 
