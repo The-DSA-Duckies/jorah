@@ -11,11 +11,44 @@ CORS(app)
 
 MONGO_USERNAME = os.getenv("MONGO_USERNAME")
 MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
-print(MONGO_USERNAME , " AH " , MONGO_PASSWORD)
+print(MONGO_USERNAME, " AH ", MONGO_PASSWORD)
 
 uri = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@autograder.4e6iu9n.mongodb.net/?retryWrites=true&w=majority&appName=Autograder"
 
 client = MongoClient(uri)
+
+DB_NAME = "test_database"
+db = client[DB_NAME]
+
+COLLECTION_NAME = "newCollection"
+collection = db[COLLECTION_NAME]
+
+documents = [
+    {
+        "student_id": 1,
+        "code": 'cout << "helloWorld" << endl;',
+        "feedback": "wow, amazing code. well done",
+        "report": "look at my beautiful code, and please give me a good score",
+        "tests": 'should print "hello world"',
+        "embedding": "wtf is this",
+    },
+    {
+        "student_id": 2,
+        "code": 'cout << "helloWorld" << endl;',
+        "feedback": "wow, amazing code. well done",
+        "report": "look at my beautiful code, and please give me a good score",
+        "tests": 'should print "hello world"',
+        "embedding": "wtf is this",
+    },
+    {
+        "student_id": 3,
+        "code": 'cout << "helloWorld" << endl;',
+        "feedback": "wow, amazing code. well done",
+        "report": "look at my beautiful code, and please give me a good score",
+        "tests": 'should print "hello world"',
+        "embedding": "wtf is this",
+    },
+]
 
 
 @app.route("/")
@@ -27,6 +60,17 @@ def ping():
         print(e)
 
     return "My First API !!"
+
+
+@app.route("/dbtest")
+def insert_record():
+    try:
+        result = collection.insert_many(documents)
+        print(f"Resulting ids from insertion: {result.inserted_ids}")
+    except Exception as e:
+        print(e)
+    return "Documents inserted into db"
+
 
 # DB_NAME = 'test_database'
 
