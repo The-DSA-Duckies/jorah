@@ -1,8 +1,6 @@
 
 from pymongo import MongoClient
 from dotenv import load_dotenv
-from openai import OpenAI
-from langchain_openai import OpenAIEmbeddings
 import os
 import torch
 from torch import Tensor
@@ -12,16 +10,6 @@ import torch.nn.functional as F
 load_dotenv()
 
 DB_NAME = 'test_database'
-
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-print(OPENAI_API_KEY)
-
-os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
-
-embeddings = OpenAIEmbeddings(modal="text-embedding-3-small")
-
-client = OpenAI()
 
 def last_token_pool(last_hidden_states: Tensor,
                  attention_mask: Tensor) -> Tensor:
