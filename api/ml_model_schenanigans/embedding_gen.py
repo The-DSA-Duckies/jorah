@@ -23,11 +23,23 @@ def last_token_pool(last_hidden_states: Tensor,
 
 tokenizer = AutoTokenizer.from_pretrained('Salesforce/SFR-Embedding-Mistral')
 model = AutoModel.from_pretrained('Salesforce/SFR-Embedding-Mistral')
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+    print("Using GPU:", torch.cuda.get_device_name(0))
+else:
+    device = torch.device("cpu")
+    print("Using CPU")
+    
 def get_embedding(text):
     # Load model and tokenizer
 
     # Prepare the text for the model
+    model.to(device)
+    
+    # Prepare the text for the model
     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=4096)
+    inputs = {k: v.to(device) for k, v in inputs.items()}  # Move inputs to the same device
+    
     with torch.no_grad():
         outputs = model(**inputs)
     
@@ -36,7 +48,6 @@ def get_embedding(text):
     embedding = F.normalize(embedding, p=2, dim=1)
     
     return embedding.squeeze().cpu().numpy()
-
 
 
 def extract_student_data(base_path):
@@ -119,10 +130,10 @@ if __name__ == "__main__":
             try:
                 embedding = get_embedding(text_to_embed)
                 print("not weird")
+                save_embedding_to_file(base_path, student_id, embedding)    
+
             except Exception as e:
                 print("weird")
         
-
-        save_embedding_to_file(base_path, student_id, embedding)    
 
 
