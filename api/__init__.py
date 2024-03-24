@@ -23,8 +23,8 @@ client = MongoClient(uri)
 DB_NAME = "test_database"
 db = client[DB_NAME]
 
-# COLLECTION_NAME = "project_2_rag_collection"
-COLLECTION_NAME = "newCollection"
+COLLECTION_NAME = "project_2_rag_collection"
+# COLLECTION_NAME = "newCollection"
 collection = db[COLLECTION_NAME]
 
 
@@ -41,6 +41,8 @@ def ping():
 
 @app.route("/assignments", methods=["GET", "POST"])
 def assignments():
+    # TODO: Get request needs method to get single assignment
+
     if request.method == "GET":
         """Find all assignment documents"""
         query = {"assignment_name": {"$exists": True}}
@@ -62,3 +64,12 @@ def assignments():
         result = collection.insert(document)
         print(result)
         return dumps(document)
+
+
+@app.route("/submissions", methods=["GET"])
+def submissions():
+    if request.method == "GET":
+        """Find single document with request student id"""
+        query = {"student_id": int(request.args["student_id"])}
+        results = collection.find(query)
+        return dumps(results)
