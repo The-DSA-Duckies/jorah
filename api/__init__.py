@@ -36,7 +36,7 @@ def ping():
     except Exception as e:
         print(e)
 
-    return "API is healthy"
+    return {"message": "API is healthy"}
 
 
 @app.route("/assignments", methods=["GET", "POST"])
