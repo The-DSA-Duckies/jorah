@@ -1,8 +1,11 @@
 from flask import Flask
+from flask import request
 from flask_cors import CORS
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
+from bson.json_util import dumps
 import os
+import json
 
 load_dotenv()
 
@@ -20,80 +23,53 @@ client = MongoClient(uri)
 DB_NAME = "test_database"
 db = client[DB_NAME]
 
-COLLECTION_NAME = "newCollection"
+COLLECTION_NAME = "project_2_rag_collection"
+# COLLECTION_NAME = "newCollection"
 collection = db[COLLECTION_NAME]
-
-documents = [
-    {
-        "student_id": 1,
-        "code": 'cout << "helloWorld" << endl;',
-        "feedback": "wow, amazing code. well done",
-        "report": "look at my beautiful code, and please give me a good score",
-        "tests": 'should print "hello world"',
-        "embedding": "wtf is this",
-    },
-    {
-        "student_id": 2,
-        "code": 'cout << "helloWorld" << endl;',
-        "feedback": "wow, amazing code. well done",
-        "report": "look at my beautiful code, and please give me a good score",
-        "tests": 'should print "hello world"',
-        "embedding": "wtf is this",
-    },
-    {
-        "student_id": 3,
-        "code": 'cout << "helloWorld" << endl;',
-        "feedback": "wow, amazing code. well done",
-        "report": "look at my beautiful code, and please give me a good score",
-        "tests": 'should print "hello world"',
-        "embedding": "wtf is this",
-    },
-]
 
 
 @app.route("/")
 def ping():
     try:
         client.admin.command("ping")
-        print("Pinged your deployment. You successfully connected to MongoDB!")
+        print("Pinged deployment, heartbeat is alive")
     except Exception as e:
         print(e)
 
-    return "My First API !!"
+    return {"message": "API is healthy"}
 
 
-@app.route("/dbtest")
-def insert_record():
-    try:
-        result = collection.insert_many(documents)
-        print(f"Resulting ids from insertion: {result.inserted_ids}")
-    except Exception as e:
-        print(e)
-    return "Documents inserted into db"
+@app.route("/assignments", methods=["GET", "POST"])
+def assignments():
+    # TODO: Get request needs method to get single assignment
+
+    if request.method == "GET":
+        """Find all assignment documents"""
+        query = {"assignment_name": {"$exists": True}}
+        results = collection.find(query)
+        return dumps(results)
+
+    if request.method == "POST":
+        """insert new assignment"""
+
+        # form document to insert
+        # TODO: This should also have information such as mean/median/num students/min/max/std deviation
+        document = {
+            "assignment_id": 1,
+            "assignment_name": request.form["assignment_name"],
+            "assignment": "Here is where assignment description will go",
+            "student_names": ["Jeremy Roach", "Jack May"],
+        }
+
+        result = collection.insert(document)
+        print(result)
+        return dumps(document)
 
 
-# DB_NAME = 'test_database'
-
-# Select the database
-# db = client[DB_NAME]
-
-# Define the collection (table) name
-# collection_name = 'newCollection'
-
-# Select the collection. If it doesn't exist, it will be created when the first document is inserted.
-# collection = db[collection_name]
-
-# Data points to insert
-# data_points = [
-#     {"name": "John Doe", "age": 30, "city": "New York"},
-#     {"name": "Jane Doe", "age": 25, "city": "Chicago"},
-#     {"name": "Jim Beam", "age": 35, "city": "San Francisco"}
-# ]
-
-# Insert data points into the collection
-# result = collection.insert_many(data_points)
-
-# Print the IDs of the inserted documents
-# print('IDs of the inserted documents:', result.inserted_ids)
-# for data_point in data_points:
-#     print(data_point["name"])
+@app.route("/submissions", methods=["GET"])
+def submissions():
+    if request.method == "GET":
+        """Find single document with request student id"""
+        query = {"student_id": int(request.args["student_id"])}
+        results = collection.find(query)
+        return dumps(results)
