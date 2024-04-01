@@ -52,7 +52,7 @@ for student_folder in os.listdir(student_folders_path):
                     document['code'] = content
                 elif 'test' in file_name:
                     document['tests'] = content
-                elif 'feedback' in file_name:
+                elif 'feedback2' in file_name:
                     document['feedback'] = content
                 elif 'report' in file_name:
                     document['report'] = content
@@ -62,11 +62,15 @@ for student_folder in os.listdir(student_folders_path):
                     document['embedding'] = [float(e) for e in embeddings]
                 # Add more conditions as needed for other file types
 
-        documents.append(document)
-# Insert data points into the collection
-result = collection.insert_many(documents)
-
-# Print the IDs of the inserted documents
-print('IDs of the inserted documents:', result.inserted_ids)
-for data_point in documents:
-     print(data_point["name"])
+        student_id = int(student_folder)
+        # The $set operator replaces the value of a field with the specified value
+        update_document = {"$set": document}
+        
+        # Update the document for the given student_id, or insert if it doesn't exist
+        result = collection.update_one({"student_id": student_id}, update_document, upsert=True)
+        
+        # Optional: print information about the update result
+        if result.matched_count:
+            pass
+        elif result.upserted_id:
+            print(f"Inserted new document with _id {result.upserted_id} for student_id {student_id}.")
