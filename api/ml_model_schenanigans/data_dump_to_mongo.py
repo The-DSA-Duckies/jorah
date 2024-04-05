@@ -3,6 +3,7 @@ from flask_cors import CORS
 from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 import os
+import re
 
 load_dotenv()
 
@@ -20,8 +21,10 @@ client = MongoClient(uri)
 DB_NAME = "test_database"
 db = client[DB_NAME]
 
-COLLECTION_NAME = "project_2_rag_collection"
+COLLECTION_NAME = "project_2_prod_feedback"
 collection = db[COLLECTION_NAME]
+
+collection.delete_many({})
 
 documents = []
 
@@ -52,14 +55,43 @@ for student_folder in os.listdir(student_folders_path):
                     document['code'] = content
                 elif 'test' in file_name:
                     document['tests'] = content
-                elif 'feedback2' in file_name:
+                elif 'feedback' in file_name:
                     document['feedback'] = content
+                    start = content.find("Score: ") + 7  # +7 to skip the length of "Score: "
+                    try:
+                        match = re.search(r"Score: (\d+(\.\d+)?)", content)
+                        original_score = match.group(1)
+                        document['grade'] = float(original_score)
+                    except:
+                        try:
+                            match = re.search(r"score: (\d+(\.\d+)?)", content)
+                            original_score = match.group(1)
+                            document['grade'] = float(original_score)
+                        except: 
+                            end = content.rfind("//")  # Assuming the score is always followed by a semicolon
+                            original_score = content[start:end]
+                            try:
+                                points = float(original_score)
+                                document['grade'] = points
+                            except:
+                                try:
+                                    end = len(content) - 1
+                                    original_score = content[start:end]
+                                    original_score = ''.join(original_score.split())
+                                    points = float(original_score)
+                                    document['grade'] = points
+                                except:
+                                    document['grade'] = None
+                    
+
                 elif 'report' in file_name:
                     document['report'] = content
                 elif 'embedding' in file_name:
                     embeddings = content.strip().split(',')
                     # Convert each embedding from string to float (or the appropriate data type)
                     document['embedding'] = [float(e) for e in embeddings]
+                elif 'studentid_ta' in file_name:
+                    document['studentid_ta'] = content
                 # Add more conditions as needed for other file types
 
         student_id = int(student_folder)
