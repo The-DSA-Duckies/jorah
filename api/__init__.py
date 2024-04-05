@@ -14,7 +14,7 @@ CORS(app)
 
 MONGO_USERNAME = os.getenv("MONGO_USERNAME")
 MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
-print(MONGO_USERNAME, " AH ", MONGO_PASSWORD)
+# print(MONGO_USERNAME, " AH ", MONGO_PASSWORD)
 
 uri = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@autograder.4e6iu9n.mongodb.net/?retryWrites=true&w=majority&appName=Autograder"
 
@@ -23,7 +23,7 @@ client = MongoClient(uri)
 DB_NAME = "test_database"
 db = client[DB_NAME]
 
-COLLECTION_NAME = "project_2_rag_collection"
+COLLECTION_NAME = "project_2_prod_feedback"
 # COLLECTION_NAME = "newCollection"
 collection = db[COLLECTION_NAME]
 
@@ -66,10 +66,30 @@ def assignments():
         return dumps(document)
 
 
-@app.route("/submissions", methods=["GET"])
+@app.route("/submissions", methods=["GET", "PUT"])
 def submissions():
     if request.method == "GET":
-        """Find single document with request student id"""
+        if "student_id" in request.args:
+            """Find single document with request student id"""
+            query = {"student_id": int(request.args["student_id"])}
+            results = collection.find(query)
+            return dumps(results)
+
+        else:
+            """Return all documents from current assignment"""
+            query = {"student_id": {"$exists": True}}
+            filter = {"student_id": 1, "studentid_ta": 1}
+            results = collection.find(query, filter)
+            return dumps(results)
+
+    if request.method == "PUT":
+        """Update student submission with new feedback and grade"""
         query = {"student_id": int(request.args["student_id"])}
-        results = collection.find(query)
-        return dumps(results)
+        update = {
+            "$set": {
+                "edited_feedback": request.json["feedback"],
+                "edited_grade": int(request.json["grade"]),
+            }
+        }
+        results = collection.update(query, update)
+        return {"message": "API Received PUT request"}
