@@ -88,7 +88,8 @@ def submissions():
         update = {
             "$set": {
                 "edited_feedback": request.json["feedback"],
-                "edited_grade": int(request.json["grade"]),
+                "edited_grade": float(request.json["grade"]),
+                "graded_status": bool(request.json["graded"]),
             }
         }
         results = collection.update(query, update)
