@@ -42,4 +42,4 @@ response = db.project_2_rag_collection.aggregate([
 ])
 
 for document in response:
-    print(document['feedback'])
+    print(document['feedback']) 
