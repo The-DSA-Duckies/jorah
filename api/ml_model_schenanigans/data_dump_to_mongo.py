@@ -82,6 +82,9 @@ for student_folder in os.listdir(student_folders_path):
                                     document['grade'] = points
                                 except:
                                     document['grade'] = None
+                    if document['grade'] != None:
+                        with open(student_folder + "_grade.txt", 'w') as file:
+                            file.write(str(document['grade']))
                     
 
                 elif 'report' in file_name:
@@ -99,10 +102,10 @@ for student_folder in os.listdir(student_folders_path):
         update_document = {"$set": document}
         
         # Update the document for the given student_id, or insert if it doesn't exist
-        result = collection.update_one({"student_id": student_id}, update_document, upsert=True)
+        # result = collection.update_one({"student_id": student_id}, update_document, upsert=True)
         
         # Optional: print information about the update result
-        if result.matched_count:
-            pass
-        elif result.upserted_id:
-            print(f"Inserted new document with _id {result.upserted_id} for student_id {student_id}.")
+        #if result.matched_count:
+        #    pass
+        #elif result.upserted_id:
+        #    print(f"Inserted new document with _id {result.upserted_id} for student_id {student_id}.")
