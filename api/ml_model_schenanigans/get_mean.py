@@ -97,3 +97,21 @@ print(mean(grades.values()))
 
 print(len(resulting_map.values()))
 
+
+import matplotlib.pyplot as plt
+
+# Assuming you have the following data lists:
+# predicted_grades = list(resulting_map.values())
+ta_reports = [float(score) for score in scores.values() if score != None]
+autograder_normalized = [float(grade) for grade in grades.values() if grade != None] 
+
+data = [ta_reports, autograder_normalized]
+
+plt.figure(figsize=(10, 6))
+plt.boxplot(data, labels=['TA Grades', 'Autograder Grades (Normalized)'])
+
+plt.title('Distribution of Grades Over Methods')
+plt.ylabel('Grade Value')
+plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+
+plt.show()
