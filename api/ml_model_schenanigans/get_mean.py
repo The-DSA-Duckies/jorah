@@ -115,3 +115,51 @@ plt.ylabel('Grade Value')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
 plt.show()
+
+# Data
+ta_reports = [float(score) for score in scores.values() if score is not None]
+autograder_normalized = [float(grade) for grade in grades.values() if grade is not None]
+
+# Plot
+plt.figure(figsize=(12, 6))
+plt.hist([ta_reports, autograder_normalized], bins=20, alpha=0.7, label=['TA Grades', 'Autograder Grades (Normalized)'])
+plt.title('Histogram of Grades')
+plt.xlabel('Grade Value')
+plt.ylabel('Frequency')
+plt.legend(loc='upper left')
+plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+plt.show()
+
+min_length = min(len(ta_reports), len(autograder_normalized))
+paired_ta_reports = ta_reports[:min_length]
+paired_autograder_normalized = autograder_normalized[:min_length]
+
+# Plot
+
+
+# Assuming that both lists are of the same length or have been adjusted to match
+# If they are not, you would need to align them by some criterion (e.g., student ID).
+min_length = min(len(ta_reports), len(autograder_normalized))
+paired_ta_reports = ta_reports[:min_length]
+paired_autograder_normalized = autograder_normalized[:min_length]
+
+# Plot
+min_length = min(len(ta_reports), len(autograder_normalized))
+paired_ta_reports = ta_reports[:min_length]
+paired_autograder_normalized = autograder_normalized[:min_length]
+
+# Data points
+x = list(range(min_length))  # Just a range of indices for positioning on the x-axis
+
+paired_ta_reports.sort()
+paired_autograder_normalized.sort()
+# Plot
+plt.figure(figsize=(10, 6))
+plt.scatter(x, paired_ta_reports, color='red', label='TA Grades', alpha=0.7)
+plt.scatter(x, paired_autograder_normalized, color='blue', label='Autograder Grades (Normalized)', alpha=0.7)
+plt.title('Comparison of TA Grades vs. Autograder Grades')
+plt.xlabel('Lowest to highest graded student')
+plt.ylabel('Grades')
+plt.legend()
+plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+plt.show()
