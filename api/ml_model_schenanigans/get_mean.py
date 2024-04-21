@@ -16,7 +16,8 @@ def map_submission_scores(filename):
             for row in reader:
                 # Get the Submission ID and Report/Test Cases score
                 submission_id = row['Submission ID']
-                score = row['2: Report/Test Cases (25.0 pts)']
+                score = row['2: Report/Test Cases (25.0 pts)'] # OK so note to self, I need to go back and check if the grader said test was or wasn't there, and compare to if test.cpp was NOT FOUND and remove those. Then, see only that data
+
                 # Map the Submission ID to the score
                 submission_scores[submission_id] = score
     except FileNotFoundError:
@@ -129,6 +130,7 @@ plt.ylabel('Frequency')
 plt.legend(loc='upper left')
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 plt.show()
+
 
 min_length = min(len(ta_reports), len(autograder_normalized))
 paired_ta_reports = ta_reports[:min_length]
