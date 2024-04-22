@@ -6,6 +6,9 @@ from statistics import mean
 
 import nltk
 from nltk.corpus import stopwords
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
  
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
@@ -76,7 +79,7 @@ def count_unique_words_per_key(input_map):
         words = set(text.lower().split())
 
         words = {word for word in words if word not in stop_words}
-        
+
         # Count the unique words and store it in the dictionary
         unique_word_count[key] = len(words)
     
@@ -104,6 +107,37 @@ def count_common_words(map_llm, map_gradescope):
 
     return common_word_count
 
+
+def result_map(map_llm, map_gradescope):
+    resulting_map = dict()
+    for key in map_llm.keys() & map_gradescope.keys():
+
+        words_llm = map_llm[key].lower()
+
+        words_gradescope = map_gradescope[key].lower()
+
+        for word in common_words:
+            words_llm = words_llm.replace(word, "")
+            words_gradescope = words_gradescope.replace(word, "")
+
+        resulting_map[key] = my_cosine_similarity(words_llm, words_gradescope)
+
+    return resulting_map
+
+def my_cosine_similarity(text1, text2):
+    vectorizer = TfidfVectorizer()
+    # Convert the text to vectors
+    tfidf_matrix = vectorizer.fit_transform([text1, text2])
+
+    # Calculate the cosine similarity
+    similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
+
+    return similarity
+
+    # print(f"Cosine similarity: {similarity[0][0]}")
+
+
+
 common_words = count_common_words(map_llm, map_gradescope)
 
 unique_words_in_gradescope = count_unique_words_per_key(map_gradescope)
@@ -116,5 +150,10 @@ for key in common_words.keys():
 print(mean(percentage_map.values()))
 
 
+result_map = result_map(map_llm, map_gradescope)
+for key in result_map:
+    result_map[key] = float(result_map[key])
+    
+print(mean(result_map.values()))
 
 
