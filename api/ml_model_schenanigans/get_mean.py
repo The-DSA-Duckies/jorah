@@ -74,6 +74,47 @@ def subtract_maps(map1, map2):
 
     return result
 
+def read_csv_for_conditions(csv_filename):
+    conditions = set()
+    try:
+        with open(csv_filename, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                # Assume we have a column 'Submission ID' and 'Catch tests: 5 catch test cases are provided'
+                submission_id = row['Assignment Submission ID']
+                catch_tests_provided = row['**Catch tests**: 5 catch test cases **are provided**']
+
+                if catch_tests_provided == 'TRUE':
+                    conditions.add(submission_id)
+    except FileNotFoundError:
+        print(f"CSV file {csv_filename} was not found.")
+    except Exception as e:
+        print(f"An error occurred while reading {csv_filename}: {e}")
+    return conditions
+
+
+def clean_submission_files(directory):
+    file_ids = set()
+    for direc in os.listdir(directory):
+        for filename in os.listdir(os.path.join(directory, direc)):
+            if filename.endswith("_feedback.txt"):
+                path = os.path.join(directory, direc, filename)
+                with open(path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    if "Bonus catch tests: 5/5 pts deducted" in content or "(bonus points not earned)" in content or "[Missing Bonus Points]" in content or "did not submit Catch test cases" in content or "Include test case" in content or "Bonus catch tests [5 pts deducted]" in content or "5 points are deducted for not providing functioning Catch2 tests" in content or "commented out" in content or "No test cases" in content or "no bonus points" in content or "did not provide the" in content or "The student provided catch test cases, but could not be evaluated due to submission formatting" in content or "**Bonus catch tests [5/5 pts deducted]:**" in content or "Bonus catch tests [5/5 pts deducted]" in content:
+                        file_ids.add(filename.split('_')[0])
+    return file_ids
+
+
+def test_case_failures():
+    set_1 = clean_submission_files('./cleaned_stuff')
+    set_2 = read_csv_for_conditions('2_Report_Test_Cases.csv')
+    set_3 = set()
+    for element in set_2:
+        if element in set_1:
+            set_3.add(element)
+    return set_3
+
 def filter_keys_from_first_map(map1, map2):
     # Create a list of keys to remove from map1
     keys_to_remove = [key for key in map1 if key not in map2]
@@ -81,6 +122,10 @@ def filter_keys_from_first_map(map1, map2):
     # Remove these keys from map1
     for key in keys_to_remove:
         del map1[key]
+    
+    for key in test_case_failures():
+        if key in map1:
+            del map1[key]
 
 for key, val in grades.items():
     grades[key] = 5/6 * float(val)
@@ -98,13 +143,35 @@ print(mean(grades.values()))
 
 print(len(resulting_map.values()))
 
+def filter_and_align(scores, grades):
+    paired_data = []
+
+    # Ensure only common keys are retained and sorted for direct comparison
+    common_keys = scores.keys() & grades.keys()
+
+    for key in common_keys:
+        if scores[key] is not None and grades[key] is not None:
+            paired_data.append((key, float(scores[key]), float(grades[key])))
+
+    return paired_data
+
+paired_data = filter_and_align(scores, grades)
+
+# Sort the data by TA grades (2nd element in each tuple), descending
+sorted_paired_data = sorted(paired_data, key=lambda x: x[1], reverse=True)
+
+# Unzip the sorted data
+_, filtered_ta_reports, filtered_autograder_normalized = zip(*sorted_paired_data)
+
 
 import matplotlib.pyplot as plt
 
 # Assuming you have the following data lists:
 # predicted_grades = list(resulting_map.values())
-ta_reports = [float(score) for score in scores.values() if score != None]
-autograder_normalized = [float(grade) for grade in grades.values() if grade != None] 
+
+_, ta_reports, autograder_normalized = zip(*sorted_paired_data)
+# ta_reports = [float(score) for score in scores.values() if score != None]
+# autograder_normalized = [float(grade) for grade in grades.values() if grade != None] 
 
 data = [ta_reports, autograder_normalized]
 
@@ -118,8 +185,8 @@ plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 plt.show()
 
 # Data
-ta_reports = [float(score) for score in scores.values() if score is not None]
-autograder_normalized = [float(grade) for grade in grades.values() if grade is not None]
+# ta_reports = [float(score) for score in scores.values() if score is not None]
+# autograder_normalized = [float(grade) for grade in grades.values() if grade is not None]
 
 # Plot
 plt.figure(figsize=(12, 6))
@@ -153,14 +220,22 @@ paired_autograder_normalized = autograder_normalized[:min_length]
 # Data points
 x = list(range(min_length))  # Just a range of indices for positioning on the x-axis
 
-paired_ta_reports.sort()
-paired_autograder_normalized.sort()
+paired_ta_reports = ta_reports
+paired_autograder_normalized = autograder_normalized
+
+# paired_ta_reports.sort()
+
+# autograde_matching_students = []
+
+#for student in paired_ta_reports:
+#    autograde_matching_students = paired_autograder_normalized[student]
+#paired_autograder_normalized.sort()
 # Plot
 plt.figure(figsize=(10, 6))
 plt.scatter(x, paired_ta_reports, color='red', label='TA Grades', alpha=0.7)
 plt.scatter(x, paired_autograder_normalized, color='blue', label='Autograder Grades (Normalized)', alpha=0.7)
 plt.title('Comparison of TA Grades vs. Autograder Grades')
-plt.xlabel('Lowest to highest graded student')
+plt.xlabel('Lowest to highest graded student by TA')
 plt.ylabel('Grades')
 plt.legend()
 plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
