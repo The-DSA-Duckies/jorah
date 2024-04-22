@@ -4,6 +4,13 @@ import csv
 
 from statistics import mean
 
+import nltk
+from nltk.corpus import stopwords
+ 
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+
 def read_csv_for_comments(csv_filename):
     comments = dict()
     try:
@@ -67,6 +74,9 @@ def count_unique_words_per_key(input_map):
     for key, text in input_map.items():
         # Convert the text to lowercase and split into words
         words = set(text.lower().split())
+
+        words = {word for word in words if word not in stop_words}
+        
         # Count the unique words and store it in the dictionary
         unique_word_count[key] = len(words)
     
@@ -80,7 +90,13 @@ def count_common_words(map_llm, map_gradescope):
     for key in map_llm.keys() & map_gradescope.keys():
         # Split the strings into sets of words
         words_llm = set(map_llm[key].lower().split())
+
         words_gradescope = set(map_gradescope[key].lower().split())
+
+        words_llm = {word for word in words_llm if word not in stop_words}
+
+        words_gradescope = {word for word in words_gradescope if word not in stop_words}
+
 
         # Count how many words in map_gradescope are present in map_llm
         common_words = words_gradescope & words_llm
