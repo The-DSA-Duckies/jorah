@@ -1,5 +1,5 @@
 # jorah
-Backend for autograder service
+Backend for Guppie Grader!
 
 ## Setup
 Using Python Flask for our backend service. In order to maintain the correct python environment to run, setup a python virtual environment in the folder of the repository. I have been using pyenv with virtualenv, here is a good tutorial for that: https://medium.com/@adocquin/mastering-python-virtual-environments-with-pyenv-and-pyenv-virtualenv-c4e017c0b173
@@ -23,3 +23,6 @@ This won't work immediately because you won't have a `.env` folder in your proje
 If your changes to the backend include a change to the dependencies that we are using (i.e you had to `pip install` something new), please save those dependencies in the `requirements.txt` file in the root of the project, and don't commit until we know that others can run the service with the new dependencies (create a PR for us to test it). In order to save your new dependencies in the file, run:
 
 `pip freeze > requirements.txt`
+
+## I'm a current UF DSA TA and I want to continue developing Guppie Grader!
+We're glad to hear this! You should get into contact with Professor Aman about allocating hours towards developing this project. You will also want to reach out to one of The DSA Duckies that originally completed this Senior Project. Here is one of our contacts: Kevin Allen (kevinj.allen2020@gmail.com). We can transfer over ownership of different resources and help you get started.
